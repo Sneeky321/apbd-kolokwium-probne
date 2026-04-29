@@ -9,7 +9,7 @@ dotnet add package Swashbuckle.AspNetCore
   }
 
 "ConnectionStrings": {
-    "DefaultConnection": "Data Source=db-mssql;Initial Catalog=2019SBD;Integrated Security=True"
+    "DefaultConnection" : "Data Source=db-mssql;Initial Catalog=2019SBD;Integrated Security=True;Trust Server Certificate=True"
   }
 
 var builder = WebApplication.CreateBuilder(args);
