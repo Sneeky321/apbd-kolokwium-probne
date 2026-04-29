@@ -8,6 +8,6 @@ dotnet add package Swashbuckle.AspNetCore
     "DefaultConnection": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=kolokwium;Integrated Security=True;"
   }
 
-"ConnectionsStrings": {
+"ConnectionStrings": {
     "DefaultConnection": "Data Source=db-mssql;Initial Catalog=2019SBD;Integrated Security=True"
   }
