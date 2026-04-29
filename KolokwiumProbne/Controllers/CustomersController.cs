@@ -50,4 +50,35 @@ public class CustomersController : ControllerBase
             return NotFound(e.Message);
         }
     }
+
+    [Route("{id}/rentals/{rentalId}")]
+    [HttpPut]
+    public async Task<IActionResult> UpdateRental(int customerId,
+        [FromRoute] int rentalId, [FromBody] UpdateRentalDetailsDto dto)
+    {
+        try
+        {
+            await _dbService.UpdateRentalAsync(rentalId, dto);
+            return NoContent();
+        }
+        catch(NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+
+    [Route("{id}/rentals/{rentalId}")]
+    [HttpDelete]
+    public async Task<IActionResult> Delete([FromRoute] int id, [FromRoute] int rentalId)
+    {
+        try
+        {
+            await _dbService.DeleteRentalAsync(rentalId);
+            return NoContent();
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
 }

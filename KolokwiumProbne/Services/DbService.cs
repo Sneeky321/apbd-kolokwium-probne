@@ -181,4 +181,78 @@ public class DbService : IDbService
 		    throw;
 	    }
     }
+
+    public async Task UpdateRentalAsync(int rentalId, UpdateRentalDetailsDto dto)
+    {
+	    var query = """
+	                UPDATE Rental
+	                SET status_id = @StatusId,
+	                    return_date = @ReturnDate
+	                WHERE rental_id = @RentalId;
+	                """;
+
+	    await using var connection = new SqlConnection(_connectionString);
+	    await connection.OpenAsync();
+	    
+	    await using var command = new SqlCommand();
+	    command.Connection = connection;
+	    command.CommandText = query;
+	    
+	    command.Parameters.AddWithValue("@RentalId", rentalId);
+	    command.Parameters.AddWithValue("@ReturnDate", dto.ReturnDate ??
+	                                                   (object)DBNull.Value);
+	    command.Parameters.AddWithValue("@StatusId", dto.StatusId);
+	    
+	    var rows = await command.ExecuteNonQueryAsync();
+
+	    if (rows == 0)
+	    {
+		    throw new NotFoundException($"Rental {rentalId} not found");
+	    }
+    }
+
+    public async Task DeleteRentalAsync(int rentalId)
+    {
+	    var deleteItemsQuery = """
+	                           DELETE FROM Rental_Item
+	                           WHERE rental_id = @RentalId;
+	                           """;
+
+	    var deleteRentalQuery = """
+	                            DELETE FROM Rental
+	                            WHERE rental_id = @RentalId;
+	                            """;
+	    
+	    await using var connection = new SqlConnection(_connectionString);
+	    await connection.OpenAsync();
+	    
+	    await using var transaction = await connection.BeginTransactionAsync();
+
+	    await using var command = new SqlCommand();
+	    command.Connection = connection;
+	    command.Transaction = transaction as SqlTransaction;
+
+	    try
+	    {
+		    command.CommandText = deleteItemsQuery;
+		    command.Parameters.AddWithValue("@RentalId", rentalId);
+		    await command.ExecuteNonQueryAsync();
+
+		    command.Parameters.Clear();
+		    command.CommandText = deleteRentalQuery;
+		    command.Parameters.AddWithValue("@RentalId", rentalId);
+
+		    var rows = await command.ExecuteNonQueryAsync();
+
+		    if (rows == 0)
+			    throw new NotFoundException($"Rental {rentalId} not found");
+
+		    await transaction.CommitAsync();
+	    }
+	    catch
+	    {
+		    await transaction.RollbackAsync();
+		    throw;
+	    }
+    }
 }
